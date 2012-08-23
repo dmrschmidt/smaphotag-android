@@ -13,7 +13,7 @@ public class TrackInfo {
 	 
 	
 	public TrackInfo() {
-		dateformat=new SimpleDateFormat("yyyyMMdd");
+		dateformat=new SimpleDateFormat("yyyy/MM/dd hh:mm");
 	}
 	
 	public TrackInfo(String _name,Date _start,Date _stop) {
