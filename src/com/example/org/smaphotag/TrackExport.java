@@ -3,6 +3,7 @@ package com.example.org.smaphotag;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import org.smaphotag.R;
 
 import android.location.Location;
 

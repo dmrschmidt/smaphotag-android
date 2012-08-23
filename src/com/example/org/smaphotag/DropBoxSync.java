@@ -2,6 +2,7 @@ package com.example.org.smaphotag;
 
 import java.io.File;
 import java.io.FileInputStream;
+import org.smaphotag.R;
 
 import android.app.Activity;
 import android.content.Context;
