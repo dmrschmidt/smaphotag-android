@@ -37,6 +37,7 @@ import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -116,7 +117,7 @@ public class MainActivity extends MapActivity implements LocationListener {
              // Store it locally in our app for later use
              TokenPair tokens = session.getAccessTokenPair();
              sync.storeKeys(tokens.key, tokens.secret);
-             //setLoggedIn(true);
+             sync.setLoggedIn(true);
 
              new SyncAsyncTask().execute();
          		
@@ -140,6 +141,17 @@ public class MainActivity extends MapActivity implements LocationListener {
 			return null;
 		}
 		
+	}
+
+	
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+		switch(item.getItemId()) {
+		case R.id.menu_settings:
+				sync.startAuth();
+				break;
+		}
+		return super.onMenuItemSelected(featureId, item);
 	}
 
 	private File[] files;

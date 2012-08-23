@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -46,7 +47,8 @@ public class DropBoxSync {
 	final static private String ACCESS_SECRET_NAME = "ACCESS_SECRET";
 
 	private Activity mContext;
-
+  private boolean mLoggedIn=false;
+  
 	private DropboxAPI<AndroidAuthSession> mApi;
 
 	public DropBoxSync(Activity ctx) {
@@ -136,9 +138,14 @@ public class DropBoxSync {
 		return new File(SmaphotagEnv.path + "track" + index + ".gpx");
 	}
 
+	public SharedPreferences getSP() {
+		return mContext.getSharedPreferences("sync_store", Context.MODE_PRIVATE);
+		
+	}
+	
 	public void doSync() {
 		try {
-			int i = 0;
+			int i = getSP().getInt("last_sync_id",0);
 
 			File act_file = getFileByIndex(i);
 			while (act_file.exists()) {
@@ -150,6 +157,8 @@ public class DropBoxSync {
 					mRequest.upload();
 				}
 
+				getSP().edit().putInt("last_sync_id", i);
+				
 				i++;
 				act_file = getFileByIndex(i);
 
@@ -163,4 +172,12 @@ public class DropBoxSync {
 	public DropboxAPI<AndroidAuthSession> getAPI() {
 		return mApi;
 	}
+	
+  /**
+   * Convenience function to change UI state based on being logged in
+   */
+  public void setLoggedIn(boolean loggedIn) {
+      mLoggedIn = loggedIn;
+  }
+
 }
