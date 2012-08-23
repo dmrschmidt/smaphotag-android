@@ -16,7 +16,8 @@ public class TrackExport {
 		res+="\t</link>\n";
 		res+="</metadata>\n";
 
-		res+="<trk>\n\t<name>FlightPlan</name>\n\t<trkseg>\n";
+		// TODO insert name
+		res+="<trk>\n\t<name></name>\n\t<trkseg>\n";
 		
 		for (Location loc:locations )
 		{
