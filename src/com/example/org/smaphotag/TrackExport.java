@@ -25,7 +25,7 @@ public class TrackExport {
 			res += "\t\t<trkpt lat=\"" + l.getLatitude() + "\" lon=\"" + l.getLongitude() + "\">\n";
 			String formatted = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date(l.getTime()));
 
-			res += "<time>" + formatted.substring(0, 22) + ":" + formatted.substring(22) + "</time>";
+			res += "\t\t<time>" + formatted.substring(0, 22) + ":" + formatted.substring(22) + "</time>\n";
 			res += "\t\t<ele>" + l.getAltitude() + "</ele>\n";
 			res += "\t\t</trkpt>\n";
 

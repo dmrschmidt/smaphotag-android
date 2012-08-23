@@ -25,11 +25,17 @@ public class TrackInfo {
 	
 	
 	public String getStartAsString() {
+		if (start==null)
+			return "---";
+		
 		return dateformat.format(start);
 	}
 	
 
 	public String getStopString() {
+		if (stop==null)
+			return "---";
+		
 		return dateformat.format(stop);
 	}
 	
