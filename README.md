@@ -12,7 +12,10 @@ This app was coded on the mobile hackathon at #cpeu
 Where To Get It?
 ================
 It's available on the Android App Store: https://play.google.com/store/apps/details?id=org.smaphotag
+
 Get the Mac Helper App here: http://bit.ly/smaphotag
+
+Find the Mac Helper App source code here: http://github.com/dmrschmidt/smaphotag-mac
 
 Usage and Requirements
 ======================
