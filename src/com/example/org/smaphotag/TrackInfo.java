@@ -2,6 +2,7 @@ package com.example.org.smaphotag;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.smaphotag.R;
 
 public class TrackInfo {
 
