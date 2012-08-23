@@ -137,7 +137,6 @@ public class MainActivity extends MapActivity implements LocationListener {
 		@Override
 		protected Void doInBackground(Void... params) {
 			sync.doSync();
-
 			return null;
 		}
 		
