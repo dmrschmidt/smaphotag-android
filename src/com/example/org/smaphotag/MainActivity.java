@@ -9,31 +9,42 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
+import com.google.android.maps.MapView;
 
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.LinearLayout.LayoutParams;
 
 public class MainActivity extends MapActivity implements LocationListener {
 
 	private LocationManager lm = null;
 	private LayoutInflater li;
 
+	private MapView map;
+	
 	private boolean recording_mode = false;
 
 	private LinearLayout header_view;
@@ -43,41 +54,69 @@ public class MainActivity extends MapActivity implements LocationListener {
 	private SimpleDateFormat dateformat;
 	private Handler hndl = new Handler();
 	private Location last_known_location;
-	private String gpx_path="/sdcard/smaphotag/";
-
+	//private String gpx_path="/sdcard/smaphotag/";
+	private ListView lv;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		dateformat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 
-		ListView lv = (ListView) this.findViewById(R.id.listView1);
+		lv = (ListView) this.findViewById(R.id.listView1);
 
 		li = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 		header_view = new LinearLayout(this);
+		header_view.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.WRAP_CONTENT));
 
 		adjustHeader();
 
 		lv.addHeaderView(header_view);
 
-		lv.setAdapter(new TrackAdapter(this, R.layout.track_item, new TrackInfo[] {
-
-		new TrackInfo("test", new Date(), new Date())
-
-		}));
-
 		this.setTitle("Smaphotag");
+		
+		generateAdapter();
+		
+	}
+	
+	private File[] files;
+	public void generateAdapter() {
+		ArrayList<TrackInfo> track_list=new ArrayList<TrackInfo>();
+		
+		File dir=new File(SmaphotagEnv.path);
+		files=dir.listFiles();
+		
+		for (File f:files) {
+			if (f.getAbsolutePath().endsWith(".gpx"))
+				track_list.add(0,new TrackInfo(f.getName(),new Date(),new Date()));
+		}
+		
+		
+		lv.setAdapter(new TrackAdapter(this, R.layout.track_item, track_list.toArray(new TrackInfo[] {})));
+		lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				Intent it = new Intent(Intent.ACTION_SEND);   
+				it.putExtra(Intent.EXTRA_SUBJECT, "GPX created with Smaphotag");   
+				it.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+files[arg2]));   
+				it.setType("application/gpx+xml");   
+				startActivity(Intent.createChooser(it, "Choose how to send the GPX"));
+				return false;
+			}
+			
+		});
 	}
 	
 	public String findNextFreeFilename() {
 		int i=0;
 		
-		while (new File(gpx_path+"track"+i+".gpx").exists()) {
+		while (new File(SmaphotagEnv.path+"track"+i+".gpx").exists()) {
 			i++;
 		};
 		
-		return gpx_path+"track"+i+".gpx";
+		return SmaphotagEnv.path+"track"+i+".gpx";
 
 	}
 
@@ -101,9 +140,10 @@ public class MainActivity extends MapActivity implements LocationListener {
 
 			header_view.addView(stopped_header);
 		} else { // recording mode
-			if (started_header == null)
+			if (started_header == null) {
 				started_header = li.inflate(R.layout.recording_header, null);
-
+				map=(MapView)started_header.findViewById(R.id.mapview);
+			}
 			Runnable update_runnable = new Runnable() {
 
 				@Override
@@ -140,6 +180,8 @@ public class MainActivity extends MapActivity implements LocationListener {
 
 						out.close();
 
+						generateAdapter(); // refresh the adapter
+						
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -167,6 +209,7 @@ public class MainActivity extends MapActivity implements LocationListener {
 			lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 			lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 5.0f, this);
 			lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000L, 5.0f, this);
+			
 		}
 	}
 
@@ -197,6 +240,11 @@ public class MainActivity extends MapActivity implements LocationListener {
 		return true;
 	}
 
+	 public static GeoPoint location2GeoPoint(Location l) {
+     return new GeoPoint((int) (l.getLatitude() * 1E6), (int) (l.getLongitude() * 1E6));
+	 }
+
+	 
 	@Override
 	public void onLocationChanged(Location location) {
 
@@ -204,6 +252,10 @@ public class MainActivity extends MapActivity implements LocationListener {
 		last_known_location = location;
 
 		track.add(location);
+		if (map!=null) {
+			map.getController().setCenter(location2GeoPoint(location));
+			map.getController().setZoom(20);
+		}
 	}
 
 	@Override
