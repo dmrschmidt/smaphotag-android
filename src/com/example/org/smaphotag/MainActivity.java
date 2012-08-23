@@ -31,127 +31,132 @@ import android.widget.TextView;
 
 public class MainActivity extends MapActivity implements LocationListener {
 
-  private LocationManager lm = null;
-  private LayoutInflater li;
-  
-  private boolean recording_mode=false;
-  
-  private LinearLayout header_view;
-  private List<Location> track=new ArrayList<Location>();
-  private View started_header;
-  private Date track_start_date;
-  private SimpleDateFormat dateformat;
-	private Handler hndl=new Handler();
-  private Location last_known_location;
-  
-	
+	private LocationManager lm = null;
+	private LayoutInflater li;
+
+	private boolean recording_mode = false;
+
+	private LinearLayout header_view;
+	private List<Location> track = new ArrayList<Location>();
+	private View started_header;
+	private Date track_start_date;
+	private SimpleDateFormat dateformat;
+	private Handler hndl = new Handler();
+	private Location last_known_location;
+	private String gpx_path="/sdcard/smaphotag/";
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		dateformat=new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
-		
+		dateformat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
+
 		ListView lv = (ListView) this.findViewById(R.id.listView1);
-		
-		li=(LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		
-		
-		header_view=new LinearLayout(this);
-		
+
+		li = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+		header_view = new LinearLayout(this);
+
 		adjustHeader();
-		
+
 		lv.addHeaderView(header_view);
-				
+
 		lv.setAdapter(new TrackAdapter(this, R.layout.track_item, new TrackInfo[] {
 
 		new TrackInfo("test", new Date(), new Date())
 
 		}));
-		
+
 		this.setTitle("Smaphotag");
 	}
 	
+	public String findNextFreeFilename() {
+		int i=0;
+		
+		while (new File(gpx_path+"track"+i+".gpx").exists()) {
+			i++;
+		};
+		
+		return gpx_path+"track"+i+".gpx";
+
+	}
+
 	public void adjustHeader() {
 		header_view.removeAllViews();
-		
+
 		if (!recording_mode) {
-			View stopped_header=li.inflate(R.layout.stopped_header,null);
-			Button btn=(Button)stopped_header.findViewById(R.id.add_button);
-			
-			btn.setOnClickListener(new OnClickListener()  {
-	
+			View stopped_header = li.inflate(R.layout.stopped_header, null);
+			Button btn = (Button) stopped_header.findViewById(R.id.add_button);
+
+			btn.setOnClickListener(new OnClickListener() {
+
 				@Override
 				public void onClick(View v) {
-					recording_mode=true;
-					track_start_date=new Date();
+					recording_mode = true;
+					track_start_date = new Date();
 					adjustHeader();
 				}
-				
+
 			});
-			
+
 			header_view.addView(stopped_header);
 		} else { // recording mode
-			if (started_header==null)
-				started_header=li.inflate(R.layout.recording_header,null);
-			
-			
-		
-			
-			Runnable update_runnable=new Runnable () {
+			if (started_header == null)
+				started_header = li.inflate(R.layout.recording_header, null);
+
+			Runnable update_runnable = new Runnable() {
 
 				@Override
 				public void run() {
-					TextView started_tv=(TextView)started_header.findViewById(R.id.start_time_tv);
-					started_tv.setText(dateformat.format(track_start_date));		
-					
-					TextView stopped_tv=(TextView)started_header.findViewById(R.id.stop_time_tv);
-					stopped_tv.setText(dateformat.format(new Date()));		
+					TextView started_tv = (TextView) started_header.findViewById(R.id.start_time_tv);
+					started_tv.setText(dateformat.format(track_start_date));
+
+					TextView stopped_tv = (TextView) started_header.findViewById(R.id.stop_time_tv);
+					stopped_tv.setText(dateformat.format(new Date()));
 					hndl.postDelayed(this, 100);
 				}
-				
+
 			};
-			
+
 			hndl.post(update_runnable);
-		
-			
-			Button btn=(Button)started_header.findViewById(R.id.stop_btn);
-			
-			btn.setOnClickListener(new OnClickListener()  {
-	
+
+			Button btn = (Button) started_header.findViewById(R.id.stop_btn);
+
+			btn.setOnClickListener(new OnClickListener() {
+
 				@Override
 				public void onClick(View v) {
-					recording_mode=false;
+					recording_mode = false;
 					adjustHeader();
-					File f=new File("/sdcard/smaphotag/test.gpx");
+					File f = new File(findNextFreeFilename());
 					try {
 						f.createNewFile();
-				
-					FileWriter sgf_writer = new FileWriter(f);
 
-					BufferedWriter out = new BufferedWriter(sgf_writer);
-					
-					out.write(TrackExport.locationListToString(track));
-					
-					out.close();
-					
-					
+						FileWriter sgf_writer = new FileWriter(f);
+
+						BufferedWriter out = new BufferedWriter(sgf_writer);
+
+						out.write(TrackExport.locationListToString(track));
+
+						out.close();
+
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 
 					track.clear();
-					
-					if (last_known_location!=null)
+
+					if (last_known_location != null)
 						track.add(last_known_location);
-					
+
 				}
-				
+
 			});
-			
+
 			header_view.addView(started_header);
 		}
-		
+
 	}
 
 	@Override
@@ -194,10 +199,10 @@ public class MainActivity extends MapActivity implements LocationListener {
 
 	@Override
 	public void onLocationChanged(Location location) {
-		
-		Log.i("smaphotag","got location" + location.getLatitude());
-		last_known_location=location;
-		
+
+		Log.i("smaphotag", "got location" + location.getLatitude());
+		last_known_location = location;
+
 		track.add(location);
 	}
 
